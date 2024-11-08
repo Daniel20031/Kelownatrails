@@ -7,7 +7,7 @@ Instructor: Washington Valencia
 ENTER STUDENT INFORMATION HERE 
 ==========================================
 CCTB project DevOps course
-STUDENT NAME: 
+STUDENT NAME:  Daniel Andres
 STUDENT ID:
 SQAC114
 ==========================================
@@ -26,221 +26,173 @@ const DISCGRP2 = 0.20;
 //Group 3
 const DISCGRP3 = 0.25;
 
+// Define initial positions based on the bee's current position
+let bee = document.getElementById("bee");
+let advice = document.getElementById("advice");
 
-let wCurrentPos = document.getElementById("bee").style.left;
-let hCurrentPos = document.getElementById("bee").style.top;
+let wPos = parseInt(bee.style.left) || 0;
+let hPos = parseInt(bee.style.top) || 0;
 
-// define initial position
-let wPos = 0;
-let hPos = 0;
-
-//Size Screen
+// Screen size
 let wSize = window.innerWidth;
 let hSize = window.innerHeight;
 
-//Gloabl variabe
+// Global variable for interval ID
 let intID;
 
-//define the variables for input
-
+// Define variables for input
 let firstname = document.getElementById("firstname");
 let lastname = document.getElementById("lastname");
 let groupSize = document.getElementById("GroupSize");
 let discRate = document.getElementById("discRate");
 let membersLst = document.getElementById("members");
 
-//define the variables for buttons
+// Define variables for buttons
 let addMemberBtn = document.getElementById("addMemberBtn");
 let deleteMemberBtn = document.getElementById("deleteMemberBtn");
 let sortMemberListBtn = document.getElementById("sortMemberListBtn");
-
-//reference to Bee
-let bee = document.getElementById("bee");
-
-//reference to advice
-let advice = document.getElementById("advice");
-
 
 let ratePerson;
 
 /*
 * Function to check that a user has entered a group member’s first and last name.
-* 
 */
 function CheckForGroupMemberInput() {
-
-	if (firstname.value != "") {
-		if (lastname.value != "") {
-			CheckForGroupSizeInput();
-		} else {
-			throw "Please first enter a group member's name";
-			lastname.focus();
-		}
-	} else {
-		throw "Please first enter a group member's name";
-		firstname.focus();
-	}
-
+    if (!firstname.value || !lastname.value) {
+        alert("Please enter a group member's full name.");
+        return;
+    }
+    CheckForGroupSizeInput();
 }
 
 /*
 * Function to check that a user has entered a value for how many people are in the group and that the entry is numeric.
-* 
 */
 function CheckForGroupSizeInput() {
-	if (groupSize.value != "") {
-		if (isNaN(groupSize.value)) {
-			throw groupSize.value + " It's not a number";
-			groupSize.focus();
-		} else {
-			if (groupSize.value > 0) {
-				CalcGroupDiscount(groupSize.value);
-			} else {
-				throw "Size must be greater than 0";
-				groupSize.focus();
-			}
-
-		}
-	} else {
-		throw "Please enter the size of your group travelers";
-		groupSize.focus();
-	}
+    if (!groupSize.value) {
+        alert("Please enter the size of your group travelers.");
+        groupSize.focus();
+        return;
+    }
+    if (isNaN(groupSize.value) || groupSize.value <= 0) {
+        alert("Size must be a positive number.");
+        groupSize.focus();
+        return;
+    }
+    CalcGroupDiscount(parseInt(groupSize.value));
 }
 
 /*
 * Function to calculate the applicable discount per group member based on group size. 
-* 
 */
 function CalcGroupDiscount(groupSize) {
-	if (groupSize < MINSIZEGRP1) {
-		ratePerson = DAILYRATE;
-	}
-	else if (groupSize >= MINSIZEGRP1 && groupSize <= MAXSIZEGRP1) {
-		ratePerson = DAILYRATE - (DAILYRATE * DISCGRP1);
-	} else if (groupSize > MAXSIZEGRP1 && groupSize <= MAXSIZEGRP2) {
-		ratePerson = DAILYRATE - (DAILYRATE * DISCGRP2);
-	} else if (groupSize > MAXSIZEGRP2) {
-		ratePerson = DAILYRATE - (DAILYRATE * DISCGRP3);
-	}
+    if (groupSize < MINSIZEGRP1) {
+        ratePerson = DAILYRATE;
+    } else if (groupSize >= MINSIZEGRP1 && groupSize <= MAXSIZEGRP1) {
+        ratePerson = DAILYRATE - (DAILYRATE * DISCGRP1);
+    } else if (groupSize > MAXSIZEGRP1 && groupSize <= MAXSIZEGRP2) {
+        ratePerson = DAILYRATE - (DAILYRATE * DISCGRP2);
+    } else if (groupSize > MAXSIZEGRP2) {
+        ratePerson = DAILYRATE - (DAILYRATE * DISCGRP3);
+    }
 
-	discRate.value = ratePerson.toFixed(2);
-	AddGroupMember(lastname.value, firstname.value);
+    discRate.value = ratePerson.toFixed(2);
+    AddGroupMember(lastname.value, firstname.value);
 }
-
 
 /*
 * Function to add a group member to the selection list.
-* 
 */
 function AddGroupMember(lastName, firstName) {
+    if (!firstName || !lastName) {
+        alert("Please enter a full name.");
+        return;
+    }
 
-	let option = document.createElement("option");
-	option.text = lastName + ", " + firstName;
-	membersLst.add(option);
+    let option = document.createElement("option");
+    option.text = lastName + ", " + firstName;
+    membersLst.add(option);
 
-	lastname.value = "";
-	firstname.value = "";
-
-	lastname.focus();
-
-
+    lastname.value = "";
+    firstname.value = "";
+    lastname.focus();
 }
 
 /*
 * Function to remove (delete) a selected group member from the selection list.
-* 
 */
 function RemoveGroupMember() {
-
-	throw "ERROR! You must work in this function before to send to Staging Environment!";
-
+    if (membersLst.selectedIndex >= 0) {
+        membersLst.remove(membersLst.selectedIndex);
+    } else {
+        alert("Please select a member to delete.");
+    }
 }
 
 /*
 * Function to sort the list of group members in ascending order by last name.
-* 
 */
 function SortGroupMembers() {
+    if (membersLst.options.length > 0) {
+        let tmpArray = [];
 
-	if (membersLst.options.length > 0) {
-		var tmpArray = new Array();
+        for (let i = 0; i < membersLst.options.length; i++) {
+            tmpArray[i] = [membersLst.options[i].text, membersLst.options[i].value];
+        }
+        tmpArray.sort();
 
-		for (let i = 0; i < membersLst.options.length; i++) {
-			tmpArray[i] = new Array();
-			tmpArray[i][0] = membersLst.options[i].text;
-			tmpArray[i][1] = membersLst.options[i].value;
-		}
-		tmpArray.sort();
-
-
-		for (var i = 0; i < tmpArray.length; i++) {
-			var op = new Option(tmpArray[i][0], tmpArray[i][1]);
-			membersLst.options[i] = op;
-		}
-	}
-	else {
-		throw "There are no group members to sort!";
-	}
-
+        for (let i = 0; i < tmpArray.length; i++) {
+            let op = new Option(tmpArray[i][0], tmpArray[i][1]);
+            membersLst.options[i] = op;
+        }
+    } else {
+        alert("There are no group members to sort!");
+    }
 }
 
+/*
+* Function to animate the bee element across the screen.
+*/
 function FlyingBee() {
+    wPos += 50;
+    hPos += 10;
 
-	wPos += parseInt(50);
-	hPos += parseInt(10);
-
-
-	if (wPos <= wSize * 0.65 || hPos <= hSize * 0.20) {
-		bee.style.left = wPos + "px";
-		bee.style.top = hPos + "px";
-
-	} else {
-		clearInterval(intID);
-		advice.style.display = "block";
-	}
-
+    if (wPos <= wSize * 0.65 || hPos <= hSize * 0.20) {
+        bee.style.left = wPos + "px";
+        bee.style.top = hPos + "px";
+    } else {
+        clearInterval(intID);
+        advice.style.display = "block";
+    }
 }
 
-addMemberBtn.addEventListener("click",
-	function () {
-		try {
-			CheckForGroupMemberInput();
-		} //end of try BlockList
+// Event listeners for buttons
+addMemberBtn.addEventListener("click", function () {
+    try {
+        CheckForGroupMemberInput();
+    } catch (e) {
+        alert(e);
+    }
+});
 
-		//catch block - catch and report the errors
-		catch (e) {
-			alert(e);
-		}
-	}
-)
+deleteMemberBtn.addEventListener("click", function () {
+    try {
+        RemoveGroupMember();
+    } catch (e) {
+        alert(e);
+    }
+});
 
-deleteMemberBtn.addEventListener("click",
-	function () {
-		try {
-			RemoveGroupMember();
-		}
-		//catch block - catch and report the errors
-		catch (e) {
-			alert(e);
-		}
-	});
+sortMemberListBtn.addEventListener("click", function () {
+    try {
+        SortGroupMembers();
+    } catch (e) {
+        alert(e);
+    }
+});
 
+// Start the bee animation
 bee.addEventListener("load", function () {
-
-	bee.style.visibility = "visible";
-	intID = setInterval(FlyingBee, 300);
-})
-
-sortMemberListBtn.addEventListener("click",
-	function () {
-		try {
-			SortGroupMembers();
-		}
-		catch (e) {
-			alert(e);
-		}
-	}
-)
-
-
-//
+    bee.style.visibility = "visible";
+    intID = setInterval(FlyingBee, 300);
+});
